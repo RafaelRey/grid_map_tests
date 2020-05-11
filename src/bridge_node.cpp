@@ -15,24 +15,25 @@ class GridMapBridge
 public:
   GridMapBridge(bool &success) : filterChain_("grid_map::GridMap")
   {
-    grid_map_subscriber_ = nh.subscribe("grid_map", 1, &GridMapBridge::gridMapCallback, this);
-    grid_map_publisher_ = nh.advertise<grid_map_msgs::GridMap>("grid_map_out", 1, true);
-
-    tf_list_.reset(new tf2_ros::TransformListener(buffer_));
-    costmap.reset(new costmap_2d::Costmap2DROS("costmap", buffer_));
-
     if (!readParameters())
     {
+      ROS_ERROR("Failed to load parameters!");
       success = false;
       return;
     }
-    // Setup filter chain.
+
     if (!filterChain_.configure(filterChainParametersName_, nh))
     {
       ROS_ERROR("Could not configure the filter chain!");
       success = false;
       return;
     }
+
+    grid_map_subscriber_ = nh.subscribe(inputTopic_, 1, &GridMapBridge::gridMapCallback, this);
+    grid_map_publisher_ = nh.advertise<grid_map_msgs::GridMap>("grid_map_out", 1, true);
+
+    tf_list_.reset(new tf2_ros::TransformListener(buffer_));
+    costmap.reset(new costmap_2d::Costmap2DROS("costmap", buffer_));
   }
 
 private:
@@ -116,12 +117,15 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "grid_map_bridge_node");
 
-  bool success;
+  bool success = true;
   GridMapBridge bridge(success);
 
-  if (success){
+  if (success)
+  {
     ros::spin();
-  }else{
+  }
+  else
+  {
     ROS_ERROR("Error initializing grid map bridge");
     return 1;
   }
