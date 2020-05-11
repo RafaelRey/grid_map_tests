@@ -3,7 +3,7 @@
     <param name="use_sim_time" value="true"/>
 
     <node pkg="elevation_mapping" type="elevation_mapping" name="elevation_mapping">
-        <!-- <rosparam command="load" file="$(find grid_map_tests)/config/elevation_params.yaml" /> -->
+        <rosparam command="load" file="$(find grid_map_tests)/config/elevation_params.yaml" />
     </node>
 
     <node pkg="elevation_mapping_demos" type="tf_to_pose_publisher.py" name="raposa_pose_publisher">
