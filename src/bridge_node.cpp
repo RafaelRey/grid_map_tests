@@ -119,8 +119,12 @@ int main(int argc, char **argv)
   bool success;
   GridMapBridge bridge(success);
 
-  if (success)
+  if (success){
     ros::spin();
+  }else{
+    ROS_ERROR("Error initializing grid map bridge");
+    return 1;
+  }
 
   return 0;
 }

@@ -1,6 +1,6 @@
 <launch>
 
-    <node pkg="grid_map_demos" type="filters_demo" name="grid_map_filter_demo" output="screen">
+    <node pkg="grid_map_tests" type="gridmap_bridge_node" name="gridmap_bridge_node" output="screen">
         <!-- Input topic -->
         <param name="input_topic" value="/elevation_mapping/elevation_map_raw" />
         <!-- Output topic -->

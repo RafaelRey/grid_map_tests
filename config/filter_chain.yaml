@@ -47,6 +47,9 @@ grid_map_filters:
   - name: surface_normals
     type: gridMapFilters/NormalVectorsFilter
     params:
+      thread_number: 1
+      parallelization_enabled: false
+      algorithm: area #default
       input_layer: elevation_inpainted
       output_layers_prefix: normal_vectors_
       radius: 0.05
