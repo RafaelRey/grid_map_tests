@@ -1,0 +1,37 @@
+height: 5
+width: 5
+
+origin_x: -1.25
+origin_y: -1.25
+resolution: 0.05
+
+robot_radius: 0.3
+
+publish_frequency: 20.0
+update_frequency: 20.0
+transform_tolerance: 0.5
+
+robot_base_frame: base_link
+map_type: costmap
+global_frame: map
+
+rolling_window: true
+static_map: false
+subscribe_to_updates: false
+always_send_full_costmap: true
+
+inflation_layer: 
+  cost_scaling_factor: 0.3
+  enabled: true
+  inflate_unknown: false
+  inflation_radius: 0.8
+obstacle_layer:
+  combination_method: 1
+  enabled: true
+  max_obstacle_height: 1
+  min_obstacle_height: 0.1
+  footprint_clearing_enabled: true
+
+plugins:
+- {name: obstacle_layer, type: 'costmap_2d::ObstacleLayer'}
+- {name: inflation_layer, type: 'costmap_2d::InflationLayer'}
