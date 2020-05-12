@@ -48,6 +48,7 @@ matrix:
   - name: Melodic Morenia
     dist: bionic
     env: ROS_DISTRO=melodic
+    
 env:
   global:
   - ROS_CI_DESKTOP="`lsb_release -cs`"
