@@ -1,14 +1,9 @@
-# NOTE: This is an example source dependency, remove it before adding the
-# dependencies.rosinstall file to your repository.
-#
-# The 'wstool' utility is the preferred way of adding elements to this file. To
-# add all repositories from an existing workspace, you can use `wstool scrape`.
-
 - git:
     local-name: elevation_mapping
     uri: https://github.com/anybotics/elevation_mapping.git
-
+- git:
     local-name: kindr
     uri: https://github.com/anybotics/kindr.git
+- git:
     local-name: kindr_ros
     uri: https://github.com/anybotics/kindr_ros.git
