@@ -59,8 +59,11 @@ private:
 
     ROS_WARN("Adding layers, resolution: %f", temp_gridmap.getResolution());
 
-    if (first_map)
+    if (first_map){
+      grid_map::Length map_len = temp_gridmap.getLength();
       mainGridMap.setGeometry(temp_gridmap.getLength(), temp_gridmap.getResolution());
+      ROS_INFO("Temp grid map length: [%f,%f], resolution: %f",map_len.x(), map_len.y(), temp_gridmap.getResolution());
+    }
 
     if (mainGridMap.addDataFrom(temp_gridmap, true, true, false, layers_names))
     {
@@ -73,7 +76,7 @@ private:
       }
       else
       {
-        costmap_converter.setCostmap2DFromGridMap(mainGridMap, std::string("obstacle_layer"), *costmap->getCostmap());
+        costmap_converter.setCostmap2DFromGridMap(mainGridMap, std::string("elevation"), *costmap->getCostmap());
       }
     }
     lock.unlock();
@@ -106,10 +109,12 @@ private:
   std::unique_ptr<costmap_2d::Costmap2DROS> costmap;
   std::unique_ptr<tf2_ros::TransformListener> tf_list_;
   // Converter
-  grid_map::Costmap2DConverter<grid_map::GridMap> costmap_converter;
+  grid_map::Costmap2DConverter<grid_map::GridMap,grid_map::Costmap2DCenturyTranslationTable> costmap_converter;
   // Grid map
   grid_map::GridMap mainGridMap;
 
+  //Let's palay with a custom translation table
+  // grid_map::Costmap2DTranslationTable<costmap_2d::NO_INFORMATION, costmap_2d::> translation_table_
   bool first_map = true;
 };
 
