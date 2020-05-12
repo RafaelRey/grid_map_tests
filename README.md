@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/RafaelRey/grid_map_tests.svg?branch=master)](https://travis-ci.org/RafaelRey/grid_map_tests)
+
 # Grid Map Tests
 
 This package is meant to start researching about the grid_map library from ETHZ and elevation mapping packages and discover how to integrate them in the NIx navigation stack.
