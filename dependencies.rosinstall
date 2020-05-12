@@ -7,3 +7,6 @@
 - git:
     local-name: kindr_ros
     uri: https://github.com/anybotics/kindr_ros.git
+- git
+    local-name: grid_map
+    uri: https://github.com/anybotics/grid_map.git
