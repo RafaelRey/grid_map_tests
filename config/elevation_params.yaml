@@ -25,7 +25,8 @@ multi_height_noise: 0.00002
 min_update_rate: 2.0
 relocate_rate: 2.0
 # time_tolerance: 0.5
-# sensor_processor/ignore_points_above: 0.4
+sensor_processor/ignore_points_above: 0.6
+sensor_processor/type: "perfect"
 # robot_motion_map_update/covariance_scale_translation_x: 0.0
 # robot_motion_map_update/covariance_scale_translation_y: 0.0
 # robot_motion_map_update/covariance_scale_translation_z: 0.0
