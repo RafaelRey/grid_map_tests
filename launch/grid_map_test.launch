@@ -1,7 +1,8 @@
 <launch>
 
     <param name="use_sim_time" value="true"/>
-
+    <arg name="use_bag" default="false"/>
+    
     <node pkg="elevation_mapping" type="elevation_mapping" name="elevation_mapping">
         <rosparam command="load" file="$(find grid_map_tests)/config/elevation_params.yaml" />
     </node>
@@ -10,8 +11,9 @@
         <param name="from_frame" type="string" value="map" />
         <param name="to_frame" type="string" value="base_link" />
     </node>
-    <node pkg="tf2_ros" type="static_transform_publisher" name="front_pico_cam_broadcaster" args="0.1 0.05 -0.06 -1.57 0 -1.57 os1_sensor front_pico_flexx_optical_frame"/>
-    <node pkg="tf2_ros" type="static_transform_publisher" name="os1_sensor_broadcaster" args="0.1 0 0.40 0 0 0 base_link os1_sensor"/>
+
+    <node pkg="tf2_ros" if="$(arg use_bag)" type="static_transform_publisher" name="front_pico_cam_broadcaster" args="0.1 0.05 -0.06 -1.57 0 -1.57 os1_sensor front_pico_flexx_optical_frame"/>
+    <node pkg="tf2_ros" if="$(arg use_bag)" type="static_transform_publisher" name="os1_sensor_broadcaster" args="0.1 0 0.40 0 0 0 base_link os1_sensor"/>
 
 
     <node pkg="grid_map_tests" type="gridmap_bridge_node" name="gridmap_bridge_node" output="screen">
