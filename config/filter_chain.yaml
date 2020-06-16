@@ -22,17 +22,17 @@ grid_map_filters:
     params:
       input_layer: elevation
       output_layer: elevation_inpainted
-      radius: 0.15
+      radius: 0.10
 
-  # Reduce noise with a radial blurring filter.
+  # # Reduce noise with a radial blurring filter.
   - name: mean_in_radius
     type: gridMapFilters/MeanInRadiusFilter
     params:
       input_layer: elevation_inpainted
       output_layer: elevation_smooth
-      radius: 0.15
+      radius: 0.10
 
-  # Boxblur as an alternative to the inpaint and radial blurring filter above.
+  #Boxblur as an alternative to the inpaint and radial blurring filter above.
   # - name: boxblur
   #   type: gridMapFilters/SlidingWindowMathExpressionFilter
   #   params:
@@ -52,7 +52,7 @@ grid_map_filters:
       algorithm: area #default
       input_layer: elevation_smooth
       output_layers_prefix: normal_vectors_
-      radius: 0.15
+      radius: 0.10
       normal_vector_positive_axis: z
 
   # Add a color layer for visualization based on the surface normal.
@@ -104,7 +104,7 @@ grid_map_filters:
     type: gridMapFilters/MathExpressionFilter
     params:
       output_layer: traversability
-      expression: -0.5 * (1.0 - (slope / 0.6)) + 0.5 * (1.0 - (roughness / 0.1))
+      expression: -0.5 * (1.0 - (slope / 0.6)) - 0.5 * (1.0 - (roughness / 0.1))
 
   # Set lower threshold on traversability.
   - name: traversability_lower_threshold
