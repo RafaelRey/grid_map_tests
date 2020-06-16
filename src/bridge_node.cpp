@@ -84,28 +84,38 @@ private:
     int idx;
     double res = temp_gridmap.getResolution();
     
+    int i_max = costmap->getCostmap()->getSizeInCellsX() * costmap->getCostmap()->getSizeInCellsY();
+    ROS_INFO("I Max: %d", i_max);
+    double wmx,wmy;
+    /*for(int i = 0; i < i_max; ++i ){
+        costmap->getCostmap()->indexToCells(i, mx, my);
+        ROS_INFO("Index %d to cells: [%d, %d]", i, mx,my);
+        costmap->getCostmap()->mapToWorld(mx,my,wmx,wmy);
+        ROS_INFO("Cells to world: [%f, %f]", wmx,wmy);
+        usleep(1e5);
+    }*/
+    unsigned int mx,my;
+    // grid_map::Matrix& data = temp_gridmap["traversability"];
+    grid_map::Position position;
     for (grid_map::GridMapIterator it(temp_gridmap); !it.isPastEnd(); ++it)
     {
-      grid_map::Position position;
       temp_gridmap.getPosition(*it, position);
-      tpx = position.x() - gridmap_msg.info.pose.position.x;
-      tpy = position.y() - gridmap_msg.info.pose.position.y;
-      if (std::fabs(tpx) < costmap->getCostmap()->getSizeInMetersX() / 2 &&
-          std::fabs(tpy) < costmap->getCostmap()->getSizeInMetersY() / 2)
-      {
-        ROS_INFO("Index: it %d: Position: [%.2f, %.2f]", (int)it.getLinearIndex(), tpx, tpy);
-        idx = costmap->getCostmap()->getIndex(tpx/res, tpy/res);
-        ROS_INFO("Costmap idx: %d", idx);
+      tpx = position.x();//- gridmap_msg.info.pose.position.x;
+      tpy = position.y();//- gridmap_msg.info.pose.position.y;
+      ROS_INFO("Temp pos: [%f, %f]", tpx, tpy);
+      if(costmap->getCostmap()->worldToMap(tpx,tpy,mx,my) && temp_gridmap.at("traversability", *it) > 0.5 ){
+        costmap->getCostmap()->setCost(mx,my, costmap_2d::LETHAL_OBSTACLE);
+        ROS_WARN("Setting lethal obstacle");
       }
-      usleep(1e5);
+      ROS_INFO("Mx, My: [%d, %d]", mx, my);
     }
-
-    if (first_map_)
+    
+    /*if (first_map_)
     {
       grid_map::Length map_len = temp_gridmap.getLength();
       mainGridMap.setGeometry(temp_gridmap.getLength(), temp_gridmap.getResolution());
       ROS_INFO("Temp grid map length: [%f,%f], resolution: %f", map_len.x(), map_len.y(), temp_gridmap.getResolution());
-    }
+    }*/
 
     /*if (mainGridMap.addDataFrom(temp_gridmap, true, true, false, layers_names))
     {
