@@ -5,6 +5,8 @@
 
 #include <tf/transform_listener.h>
 #include <tf2_ros/transform_listener.h>
+#include <geometry_msgs/TransformStamped.h>
+
 #include <grid_map_costmap_2d/Costmap2DConverter.hpp>
 #include <grid_map_ros/grid_map_ros.hpp>
 
@@ -31,12 +33,30 @@ public:
 
     grid_map_subscriber_ = nh.subscribe(inputTopic_, 1, &GridMapBridge::gridMapCallback, this);
     grid_map_publisher_ = nh.advertise<grid_map_msgs::GridMap>("grid_map_out", 1, true);
+    nh.param("world_frame", world_frame_);
+    nh.param("base_frame", base_frame_);
 
     tf_list_.reset(new tf2_ros::TransformListener(buffer_));
     costmap.reset(new costmap_2d::Costmap2DROS("costmap", buffer_));
   }
 
 private:
+  geometry_msgs::TransformStamped getRobotPose(const std::string &target_frame, const std::string &robot_frame)
+  {
+
+    geometry_msgs::TransformStamped transformStamped;
+    try
+    {
+      transformStamped = buffer_.lookupTransform(target_frame, robot_frame,
+                                                 ros::Time(0));
+    }
+    catch (tf2::TransformException &ex)
+    {
+      ROS_WARN("%s", ex.what());
+      ros::Duration(1.0).sleep();
+    }
+    return transformStamped;
+  }
   void filterGridMap(grid_map::GridMap &input_map)
   {
     if (!filterChain_.update(input_map, input_map))
@@ -58,28 +78,51 @@ private:
     layers_names.push_back("elevation");
 
     ROS_WARN("Adding layers, resolution: %f", temp_gridmap.getResolution());
+    ROS_INFO("Map Position, [%f, %f]", temp_gridmap.getPosition().x(), temp_gridmap.getPosition().y());
 
-    if (first_map){
-      grid_map::Length map_len = temp_gridmap.getLength();
-      mainGridMap.setGeometry(temp_gridmap.getLength(), temp_gridmap.getResolution());
-      ROS_INFO("Temp grid map length: [%f,%f], resolution: %f",map_len.x(), map_len.y(), temp_gridmap.getResolution());
+    double tpx, tpy;
+    int idx;
+    double res = temp_gridmap.getResolution();
+    
+    for (grid_map::GridMapIterator it(temp_gridmap); !it.isPastEnd(); ++it)
+    {
+      grid_map::Position position;
+      temp_gridmap.getPosition(*it, position);
+      tpx = position.x() - gridmap_msg.info.pose.position.x;
+      tpy = position.y() - gridmap_msg.info.pose.position.y;
+      if (std::fabs(tpx) < costmap->getCostmap()->getSizeInMetersX() / 2 &&
+          std::fabs(tpy) < costmap->getCostmap()->getSizeInMetersY() / 2)
+      {
+        ROS_INFO("Index: it %d: Position: [%.2f, %.2f]", (int)it.getLinearIndex(), tpx, tpy);
+        idx = costmap->getCostmap()->getIndex(tpx/res, tpy/res);
+        ROS_INFO("Costmap idx: %d", idx);
+      }
+      usleep(1e5);
     }
 
-    if (mainGridMap.addDataFrom(temp_gridmap, true, true, false, layers_names))
+    if (first_map_)
+    {
+      grid_map::Length map_len = temp_gridmap.getLength();
+      mainGridMap.setGeometry(temp_gridmap.getLength(), temp_gridmap.getResolution());
+      ROS_INFO("Temp grid map length: [%f,%f], resolution: %f", map_len.x(), map_len.y(), temp_gridmap.getResolution());
+    }
+
+    /*if (mainGridMap.addDataFrom(temp_gridmap, true, true, false, layers_names))
     {
       ROS_INFO("Grid map resolution: %f", mainGridMap.getResolution());
 
-      if (first_map)
+      if (first_map_)
       {
-        first_map = false;
+        first_map_ = false;
         costmap_converter.initializeFromGridMap(mainGridMap, *costmap->getCostmap());
       }
       else
       {
-        costmap_converter.setCostmap2DFromGridMap(mainGridMap, std::string("elevation"), *costmap->getCostmap());
+        costmap_converter.setCostmap2DFromGridMap(mainGridMap, std::string("traversability"), *costmap->getCostmap());
       }
-    }
+    }*/
     lock.unlock();
+
     grid_map_msgs::GridMap outputMessage;
     grid_map::GridMapRosConverter::toMessage(temp_gridmap, outputMessage);
     grid_map_publisher_.publish(outputMessage);
@@ -94,11 +137,11 @@ private:
     nh.param("filter_chain_parameter_name", filterChainParametersName_, std::string("grid_map_filters"));
     return true;
   }
-  ros::NodeHandle nh{ "~" };
+  ros::NodeHandle nh{"~"};
   ros::Subscriber grid_map_subscriber_;
   ros::Publisher grid_map_publisher_;
-
-  tf2_ros::Buffer buffer_{ ros::Duration(5) };
+  std::string base_frame_ = {"base_link"};
+  std::string world_frame_ = {"map"};
 
   filters::FilterChain<grid_map::GridMap> filterChain_;
 
@@ -107,15 +150,16 @@ private:
 
   // Costmsp
   std::unique_ptr<costmap_2d::Costmap2DROS> costmap;
+  tf2_ros::Buffer buffer_{ros::Duration(5)};
   std::unique_ptr<tf2_ros::TransformListener> tf_list_;
   // Converter
-  grid_map::Costmap2DConverter<grid_map::GridMap,grid_map::Costmap2DCenturyTranslationTable> costmap_converter;
+  grid_map::Costmap2DConverter<grid_map::GridMap, grid_map::Costmap2DCenturyTranslationTable> costmap_converter;
   // Grid map
   grid_map::GridMap mainGridMap;
 
   //Let's palay with a custom translation table
   // grid_map::Costmap2DTranslationTable<costmap_2d::NO_INFORMATION, costmap_2d::> translation_table_
-  bool first_map = true;
+  bool first_map_ = true;
 };
 
 int main(int argc, char **argv)
