@@ -83,10 +83,7 @@ jobs:
           token: '${{ secrets.FALI_TOKEN  }}'
 
       - run: |
-          # echo "https://$GITHUB_USER:$GITHUB_PAT@github.com" >> ~/.git-credentials
-          # git config --global credential.helper store
           git clone https://github.com/robotics-upo/lazy_theta_star_planners.git
-          # wstool init ./src/ ./src/$REPO_NAME/$REPO_NAME.rosinstall
         shell: bash
         working-directory: catkin_ws
         env:
