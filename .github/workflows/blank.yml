@@ -88,5 +88,5 @@ jobs:
         working-directory: catkin_ws
         env:
          # TODO: Replace 'lewkoo' with your bot name (HaruAccessBot)
-         GITHUB_USER: HaruAccessBot
-         GITHUB_PAT: ${{ secrets.HARUBOTACCESSGITPAT  }}
+         GITHUB_USER: 'RafaelRey'
+         GITHUB_PAT: ${{ secrets.FALI_TOKEN  }}
