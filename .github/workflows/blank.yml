@@ -69,4 +69,27 @@ jobs:
           remote: ~/
           host: ${{ secrets.HOST }}
           username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.UPO_SERVER_PASS }}
+          password: ${{ secrets.UPO_SERVER_PASS }} 
+        # Pull dependency repos
+      # Assumes a {repo_name}.rosinstall file exists at the root of the repo
+      # name must match exactly the name of the folder
+      # Only https (not ssh) github links are supported in the .rosinstall file
+      - name: Run wstool
+        uses: oleksiyrudenko/gha-git-credentials@v1
+        with:
+          name: 'RafaelRey'
+          email: 'reyarcenegui@gmail.com'
+          actor: 'RafaelRey'
+          token: '${{ secrets.FALI_TOKEN  }}'
+
+      - run: |
+          # echo "https://$GITHUB_USER:$GITHUB_PAT@github.com" >> ~/.git-credentials
+          # git config --global credential.helper store
+          git clone https://github.com/robotics-upo/lazy_theta_star_planners.git
+          # wstool init ./src/ ./src/$REPO_NAME/$REPO_NAME.rosinstall
+        shell: bash
+        working-directory: catkin_ws
+        env:
+         # TODO: Replace 'lewkoo' with your bot name (HaruAccessBot)
+         GITHUB_USER: HaruAccessBot
+         GITHUB_PAT: ${{ secrets.HARUBOTACCESSGITPAT  }}
