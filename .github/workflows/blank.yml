@@ -1,33 +1,73 @@
-# This is a basic workflow to help you get started with Actions
+# TODO:
 
-name: CI
+name: Build and Release for ROS Kinetic & ROS Melodi
 
 # Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
+# events but only for the master branch touching comments to recommit
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    branches: [master]
+# Enable this to only trigger this workflow for when a certain tag is created and pushed
+#  tags:
+#    - '*.*.*'
+
+# Declare some global variables
+env:
+  ROS_KINETIC: ROS Kinetic
+  ROS_MELODIC: ROS Melodic
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
+  # Build step
+  # Sets up Kinetic and Melodic containers, installs extra dependencies,
+  # builds a debian file and publishes it as an artifact
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    # Ensures that the same step gets duplicated to any number of containers. For now we just want ROS Kinetic and ROS Melodic
+    strategy:
+      matrix:
+        container:
+          - "ros:melodic"
+          - "ros:kinetic"
+        include:
+          - container: "ros:melodic"
+            ros_distribution: Melodic
+         # - container: "ros:kinetic"
+         #   ros_distribution: Kinetic
+
+    container:
+      # Specify which container type to use according to the container strategy matrix
+      image: ${{ matrix.container }}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
+      # Official ROS Containers come with outdated Git, which, in turn, mean that the target repo is downloaded and
+      # unziped by github rather than cloned. Since later on we require .git folder, we need this step to update Git first
+      - name: Update git
+        run: |
+          # Update package cache
+          apt-get update
+          # Install build agent and some other packages
+          apt-get install -yq software-properties-common apt-utils
+          # Upgrade git
+          add-apt-repository -y -u ppa:git-core/ppa
+          # Upgrade git
+          apt-get install -yq git
+        shell: bash
 
-    # Runs a single command using the runners shell
-    - name: Run a one-line script
-      run: echo Hello, world!
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout code
+        uses: actions/checkout@v2 #https://github.com/marketplace/actions/checkout
+        with:
+          fetch-depth: 0
 
-    # Runs a set of commands using the runners shell
-    - name: Run a multi-line script
-      run: |
-        echo Add other actions to build,
-        echo test, and deploy your project.
+      - name: copy file via ssh password
+        uses: appleboy/scp-action@master
+        with:
+          host: robotics.upo.es
+          username: fali
+          password: ${{ secrets.UPO_SERVER_PASS }}
+          port: 22
+          source: "${{ github.workspace }}/"
+          target: "~/$GITHUB_REPOSITORY_automated_deploy"
