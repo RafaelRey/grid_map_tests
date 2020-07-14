@@ -69,4 +69,4 @@ jobs:
           remote: ~/
           host: ${{ secrets.HOST }}
           username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.PASSWORD }}
+          password: ${{ secrets.UPO_SERVER_PASS }}
